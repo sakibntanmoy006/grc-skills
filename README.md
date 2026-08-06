@@ -23,4 +23,15 @@ KPIs/KRIs.
 npx skills add sakibntanmoy006/grc-skills@cms
 ```
 
+## compliance-catalog
+
+Catalog of 584 enterprise compliance requirements across 80 domains and 11 categories,
+with an index of requirement names, domains, categories, applicability, and process
+owners. Use it to populate obligation registers, build risk-control matrices, and plan
+monitoring and audits.
+
+```bash
+npx skills add sakibntanmoy006/grc-skills@compliance-catalog
+```
+
 [![skills.sh](https://skills.sh/b/sakibntanmoy006/grc-skills)](https://skills.sh/sakibntanmoy006/grc-skills)
