@@ -1,221 +1,182 @@
 ---
 name: cms
-description: Guidance for implementing, automating, and operating a certifiable Compliance Management System (CMS) based on ISO 37301, with supporting ISO integrity standards (ISO 37001 anti-bribery, ISO 37002 whistleblowing, ISO 37003 fraud control). Use when planning a CMS, building the compliance universe and obligation register, designing compliance risk controls, automating compliance workflows (I-BOS), running a 15-day CMS launch roadmap, defining compliance KPIs/KRIs, or preparing for ISO 37301 certification.
+description: Compliance checker for an enterprise Compliance Management System (CMS) built on a catalog of 584 filterable compliance requirements across 80 domains and 11 categories. Use when someone describes their work, process, or working method and wants to know whether it is compliant or non-compliant, and if non-compliant, exactly which requirements are breached, what minimum requirements are violated, what evidence is missing, and which non-compliance triggers apply.
 license: MIT
 metadata:
   author: humaninside
-  tags: cms, compliance, iso-37301, grc, iso-37001, iso-37002, iso-37003, risk-management, i-bos, audit
+  tags: cms, compliance, checker, verdict, obligation, iso-37301, grc, audit, governance, legal, esg, hse
 ---
 
-# CMS — Compliance Management System
+# Compliance Catalog — Enterprise Compliance Checker
 
 ## Overview
 
-This skill codifies the design and delivery of a certifiable enterprise Compliance
-Management System (CMS). It follows ISO 37301:2021 (with Amendment 1:2024) as the
-primary framework, ISO 37302:2025 for effectiveness evaluation, and ISO 37303:2025 for
-compliance-role competency, supported by the ISO 37000/37001/37002/37003 family, ISO
-31000, COSO ERM, the IIA Three Lines Model, G20/OECD Corporate Governance Principles,
-and the U.S. DOJ compliance-program benchmark.
+This skill evaluates whether a described activity, process, or working method is
+**compliant** or **non-compliant** against an enterprise compliance catalog of
+**584 requirements** across **80 domains** and **11 categories**.
 
-The operational target is a single connected compliance data chain, automated through
-an I-BOS-style system, delivered via a PDCA-based 15-day Minimum Viable launch with a
-structured 90-day completion phase.
+Given any description of how someone does their work, this skill:
 
-## When to Apply
+1. Identifies which compliance requirements could apply.
+2. Compares the described working method against the minimum requirements, required
+   evidence, and audit/pass criteria for those requirements.
+3. Produces a clear verdict: **COMPLIANT**, **NON-COMPLIANT**, or **NEEDS MORE
+   INFORMATION**.
+4. If non-compliant, explains **how and why** it is non-compliant, citing the exact
+   requirements breached.
 
-- Planning or implementing a Compliance Management System or GRC Management System.
-- Building or updating a compliance universe, obligation register, or risk-control matrix.
-- Designing or configuring automated compliance workflows (obligations, calendar,
-  evidence, escalation, third-party due diligence, investigations, CAPA).
-- Running or reviewing a 15-day CMS launch roadmap.
-- Defining compliance KPIs/KRIs and dashboards.
-- Preparing for ISO 37301 gap assessment or certification readiness.
+The requirement index is in `references/requirements-index.csv`
+(name, domain, category, applicability, process owner). The full field detail
+(minimum requirements, evidence, pass criteria, non-compliance triggers) lives in the
+source workbook `Compliance_Requirements_Only.xlsx`; load it when full detail is needed
+for a verdict.
 
-## Core Principles
+## The Compliance Check Workflow (Primary)
 
-1. **Frameworks first** — anchor to ISO 37301 as the certifiable baseline and the
-   supporting integrity standards for specific domains.
-2. **One connected data chain** — every element links from source to outcome:
-   Compliance Universe → Obligation → Risk → Control → Owner → Due Date → Evidence →
-   Testing → Finding/Case → CAPA → Management Review.
-3. **Automation is non-negotiable** — key controls are enforced by the system, not by
-   manual discipline.
-4. **DoJ benchmark** — the system must be well designed, adequately empowered and
-   resourced, and demonstrably effective in practice, using risk assessment, data
-   analytics, confidential reporting, investigation, periodic testing, root-cause
-   analysis, and remediation.
-5. **Minimum Viable then complete** — 15 days launches the automation; 90 days completes
-   the population and prepares for certification.
+Whenever someone describes their work or working method and asks whether it is
+compliant, follow this order:
 
-## Reference Frameworks
+### Step 1 — Understand the described activity
 
-| Domain | Standard / Framework |
+Extract from the description:
+
+- **Who** (role, function, SBU, factory, site)
+- **What** (the process, action, or working method)
+- **How** (steps, handling of documents/evidence, approvals, retention, controls)
+
+Ask clarifying questions only if you cannot determine scope from the description.
+
+### Step 2 — Identify candidate requirements
+
+- Filter the requirements index by keywords in the described activity, the role/SBU,
+  and the applicability patterns (e.g., "all factories", "Group-wide", "procurement",
+  "all information assets", "only the SBU named").
+- Narrow to the most relevant requirements; do not judge against the whole catalog.
+- Use the source workbook for full detail on each candidate.
+
+### Step 3 — Evaluate each candidate requirement
+
+For each candidate, compare the described method against:
+
+- **Minimum Requirements for Compliance** — are all required controls/actions present?
+- **Required Evidence** — is the required documentation produced and retained?
+- **Audit / Pass Criteria** — would the described method pass the audit test?
+- **Non-Compliance Triggers** — does the described method match any trigger?
+
+Also apply the CMS automation rules where relevant: unique IDs, mandatory evidence
+before closure, approval roles, segregation of duties, escalation, and audit trail.
+
+### Step 4 — Produce the verdict
+
+Use exactly this format:
+
+```
+VERDICT: COMPLIANT | NON-COMPLIANT | NEEDS MORE INFORMATION
+
+If COMPLIANT:
+  Based on: <requirement name(s)> — the method meets the minimum requirements,
+  produces required evidence, and passes audit criteria.
+
+If NON-COMPLIANT (for each breached requirement):
+  Requirement: <name> (Domain: <domain>)
+  What Is Non-Compliant: <the specific behavior/gap>
+  Minimum Requirement Violated: <field from workbook>
+  Evidence Missing: <what evidence is not produced/retained>
+  Pass Criteria Failed: <the audit criterion not met>
+  Non-Compliance Trigger Matched: <the trigger that applies>
+
+If NEEDS MORE INFORMATION:
+  Missing: <what info is needed to judge>
+  Ask: <specific questions to the user>
+```
+
+### Step 5 — Advise remediation (when non-compliant)
+
+For each breach, recommend corrective action: what to change in the working method,
+what evidence to start producing, who should own the fix (refer to the Indicative
+Process Owner), and how to re-verify compliance.
+
+## Rules of the Check
+
+- **Judge on evidence and controls, not intention.** A good-faith effort without
+  required evidence or controls is still non-compliant.
+- **Scope matters.** Only judge against requirements that apply to the described role,
+  SBU, factory, or activity. Requirements marked "Only the SBU or activity named" are
+  not group-wide by default.
+- **Minimum requirements are mandatory.** Missing any minimum requirement = non-compliant.
+- **When in doubt, ask.** If the description is insufficient to evaluate a requirement,
+  mark NEEDS MORE INFORMATION rather than guessing.
+- **Be specific.** Never answer "non-compliant" without naming the exact requirement(s)
+  and the specific reason.
+
+## Catalog Reference
+
+### 11 Categories and Domain Coverage
+
+| Category | Domains |
 |---|---|
-| CMS (certifiable) | ISO 37301:2021 + Amendment 1:2024 |
-| Effectiveness evaluation | ISO 37302:2025 |
-| Compliance-role competency | ISO 37303:2025 |
-| Anti-bribery | ISO 37001:2025 |
-| Whistleblowing | ISO 37002:2021 |
-| Fraud control | ISO 37003:2025 |
-| Governance / risk / assurance | ISO 37000, ISO 31000, COSO ERM & Compliance Risk Mgmt, IIA Three Lines Model, G20/OECD Principles of Corporate Governance 2023 |
-| Program benchmark | U.S. DOJ Compliance Program (well designed, empowered/resourced, demonstrably effective) |
+| Governance, Legal & Integrity (152) | Corporate Governance, Legal, Regulatory, Compliance Management System, Enterprise Risk Management, Audit & Assurance, Ethics & Integrity, Anti-Bribery, Whistleblowing, Fraud Control, Competition & Antitrust, Procurement Integrity, Contract Management, Document & Record Management, Records Management, Internal Policy |
+| Quality, Product & Customer (89) | Quality, Industry Certification, Buyer, Product, Packaging, Food Safety, Laboratory, Metrology, Customer & Market, Consumer Affairs, Marketing, Sales, Research & Innovation |
+| HSE, Environment & Sustainability (77) | Occupational Health & Safety, Environmental, Chemical, Energy, Water Stewardship, Biodiversity, Carbon, Circular Economy, ESG, ESG Due Diligence, Sustainability, Sustainability Reporting |
+| Supply Chain, Trade & Operations (62) | Procurement, Supply Chain, Third Party, Import Export, Trade, Export Customer, Logistics, Fleet, Operational |
+| Technology, Data & Security (56) | Information Security, Cyber Security, Privacy & Data Protection, IT Governance, Cloud, Software, Digital Governance, Digital Transformation Governance, Artificial Intelligence |
+| Finance, Tax & Insurance (40) | Finance, Tax, AML & Financial Crime, Insurance |
+| Engineering, Assets & Manufacturing (29) | Engineering, Manufacturing, Asset Integrity, Process Safety Management, Reliability |
+| People & Human Rights (28) | Human Resource, Human Rights, Diversity Equity & Inclusion, Travel & Mobility |
+| Resilience, Security & Emergency (24) | Business Continuity, Crisis Management, Emergency Preparedness, Physical Security, Physical Asset Security |
+| Sector-Specific & Regulated Activities (16) | Sector Specific Compliance |
+| Projects, Property & Facilities (11) | Project, Real Estate & Infrastructure |
 
-Always confirm which standards are in scope for the organization before assuming
-requirements.
+(Counts are number of requirements per category. Domain-level counts vary from 3–16.)
 
-## Enterprise CMS Architecture (I-BOS Modules)
+### Requirement Fields (Source Workbook Schema)
 
-| Module | Main purpose |
+| Field | Meaning |
 |---|---|
-| Compliance Universe | Define all legal, regulatory, contractual, licence, ESG, buyer-code and internal requirements |
-| Obligation Register | Record applicability, owner, frequency, due date, evidence and source |
-| Compliance Risk Register | Assess likelihood, impact, inherent risk and residual risk |
-| Control Library | Define preventive, detective and corrective controls |
-| Compliance Calendar | Generate recurring tasks, reminders and overdue escalation |
-| Evidence and DMS Link | Prevent task closure without valid supporting evidence |
-| Third-Party Due Diligence | Screen suppliers, agents, contractors, dealers and consultants |
-| Ethics and Declaration | Manage conflicts of interest, gifts, hospitality and compliance declarations |
-| Speak-Up and Investigation | Protect confidentiality and manage investigation lifecycle |
-| Monitoring and Testing | Test whether controls are designed and operating effectively |
-| CAPA | Manage root cause, corrective action, preventive action and verification |
-| Dashboard | Provide Group, SBU, factory and process-level compliance reporting |
+| Compliance Name | The requirement name |
+| Domain Name | Governing domain it belongs to |
+| Category | High-level grouping |
+| What It Is | Definition |
+| Why It Is Important | Rationale |
+| Why It Is Needed | Driver (law, code, buyer, internal) |
+| How It Should Work | Expected operating behaviour |
+| Minimum Requirements for Compliance | Minimum controls/actions — the compliance bar |
+| Required Evidence | Documentation required |
+| Audit / Pass Criteria | How it is judged compliant |
+| Non-Compliance Triggers | What constitutes a breach |
+| Typical Applicability / SBU | Who/what it applies to |
+| Indicative Process Owner | Accountable function |
 
-## PDCA-Based 15-Day Roadmap
+## Common Applicability and Ownership Patterns
 
-### PLAN — Days 1–6
+**Top applicability patterns:** Group-wide and all SBUs; all legal entities and
+corporate offices; all employees/workers/contractors; all factories/sites/offices;
+all taxable entities; all information assets/systems/users; SBU certification and
+customer requirements; only the SBU or activity named.
 
-| Day | Key activity | Main output |
-|---|---|---|
-| 1 | Confirm enterprise scope, SBUs, factories, sites, priority domains and sponsorship | Approved CMS project charter |
-| 2 | Establish governance, committee, Three Lines responsibilities, RACI and escalation authority | CMS governance structure |
-| 3 | Develop enterprise compliance universe | Group-wide compliance domain map |
-| 4 | Design obligation taxonomy and load priority obligations, permits and filings | Priority obligation register |
-| 5 | Approve 5×5 compliance-risk assessment methodology | Compliance risk register |
-| 6 | Develop common control library and map obligations, risks, controls and evidence | Risk-control matrix |
+**Most common process owners:** Chief Compliance Officer, Chief HR Officer, Company
+Secretary/Board Office, Head of Legal, Head of Tax/CFO, Head of HSE, Head of
+Environment, CFO, Chief Risk Officer, Procurement/Compliance, Management
+Systems/Quality, CISO/Head of IT.
 
-### DO — Days 7–12
+## Other Uses
 
-| Day | Key activity | Main output |
-|---|---|---|
-| 7 | Configure I-BOS master data, roles, access, unique IDs and segregation of duties | CMS data model and access matrix |
-| 8 | Configure new/changed obligation validation and approval workflow | Obligation lifecycle workflow |
-| 9 | Configure calendar, recurring tasks, evidence, reminders and escalation | Automated compliance calendar |
-| 10 | Configure third-party DD, COI, gifts, hospitality and declaration workflows | Integrity workflow package |
-| 11 | Configure confidential case, investigation, root-cause and CAPA workflows | Case and CAPA module |
-| 12 | Establish compliance training matrix, champions and policy acknowledgements | Competence and communication plan |
+The catalog also supports:
 
-### CHECK — Days 13–14
-
-| Day | Key activity | Main output |
-|---|---|---|
-| 13 | Develop KPI/KRI dashboard, monitoring plan and management-review reporting | CMS dashboard and testing plan |
-| 14 | Conduct end-to-end UAT using obligation, overdue task, vendor and investigation scenarios | Signed UAT and readiness checklist |
-
-### ACT — Day 15
-
-| Day | Key activity | Main output |
-|---|---|---|
-| 15 | Leadership management review, go-live decision, ownership transfer and 30/60/90-day planning | Controlled go-live approval |
-
-## Mandatory Automation Controls (Non-Negotiable)
-
-- Every obligation, risk, control, case and CAPA must have a unique ID.
-- Legal interpretations and applicability decisions require Legal approval.
-- High-risk activities must have separate maker, reviewer and approver roles.
-- Tasks cannot be closed without mandatory evidence.
-- Critical obligations should have 90/60/30/15/7/1-day reminders where relevant.
-- Overdue critical matters must escalate from owner → functional head → SBU head →
-  Group leadership.
-- High-risk vendors should not be activated before due-diligence approval.
-- Investigation records must use restricted, need-to-know access.
-- CAPA closure must require independent effectiveness verification.
-- All changes, approvals, evidence and status updates must remain in the audit trail.
-
-## Initial Performance Indicators (Dashboard)
-
-At minimum, report:
-
-1. Total, overdue and upcoming obligations.
-2. Critical and high residual compliance risks.
-3. Controls that are ineffective, weak or untested.
-4. Licence and permit expiry exposure.
-5. Open and overdue investigations.
-6. CAPA ageing and effectiveness.
-7. High-risk third-party due-diligence status.
-8. Regulatory changes awaiting implementation.
-9. Compliance training completion and assessment results.
-10. Compliance monitoring and audit pass rate.
-11. SBU and factory-level compliance scores.
-12. I-BOS workflow implementation progress.
-
-## Implementation Position
-
-The 15-day programme is a **Minimum Viable Enterprise CMS automation launch** — not
-completion of the entire legal register or ISO 37301 certification.
-
-Use the following **90 days** to:
-
-- Populate all applicable entities, factories, licences and legal obligations.
-- Validate obligation ownership with Legal and SBU management.
-- Complete critical/high-risk control testing.
-- Integrate relevant ERP, HRIS, procurement, finance, HSE, DMS and LMS data.
-- Conduct internal audit and formal management review.
-- Prepare for ISO 37301 gap assessment or certification readiness.
-
-## Workflow
-
-### Plan a CMS
-
-1. Confirm scope (SBUs, factories, sites, priority domains) and sponsorship.
-2. Establish governance: committee, Three Lines responsibilities, RACI, escalation.
-3. Develop the compliance universe and obligation taxonomy.
-4. Load priority obligations; approve risk-assessment methodology (e.g., 5×5).
-5. Build the control library and risk-control matrix.
-6. Produce a roadmap with milestones, owners, and approval gates.
-
-### Automate (configure the system)
-
-1. Configure master data, roles, access, unique IDs, and segregation of duties.
-2. Build obligation validation/approval lifecycle workflow.
-3. Configure calendar, recurring tasks, evidence requirements, reminders, escalation.
-4. Configure integrity workflows (third-party DD, COI, gifts, hospitality, declarations).
-5. Configure confidential case, investigation, root-cause, and CAPA workflows.
-6. Enable audit trail on all changes, approvals, evidence, and status updates.
-
-### Monitor and test
-
-1. Define KPIs/KRIs and the monitoring/testing plan.
-2. Test whether controls are designed and operating effectively.
-3. Review dashboards for overdue obligations, residual risks, ineffective controls,
-   licence expiries, investigations, CAPA ageing, and training completion.
-4. Escalate overdue critical matters up the defined chain.
-
-### Review and improve
-
-1. Run end-to-end UAT and obtain signed readiness checklist.
-2. Conduct leadership management review and controlled go-live decision.
-3. Plan 30/60/90-day completion activities.
-4. Prepare gap assessment / certification readiness against ISO 37301.
-
-## Deliverables
-
-Typical outputs produced under this skill:
-
-- CMS project charter and governance structure (RACI, escalation authority)
-- Compliance universe and obligation register
-- Compliance risk register (5×5 likelihood/impact, inherent/residual risk)
-- Risk-control matrix (obligations, risks, controls, evidence)
-- I-BOS workflow blueprint and access matrix
-- Compliance calendar and escalation rules
-- KPI/KRI dashboard and monitoring/testing plan
-- Signed UAT and go-live approval records
-- 30/60/90-day completion and certification-readiness plan
+- **Obligation register mapping** — filter by category/domain/SBU and load owners,
+  evidence, and pass criteria.
+- **Risk-control matrices** — group by domain, define the risk, map minimum
+  requirements and evidence as controls.
+- **Monitoring, testing, and audits** — use audit/pass criteria as test definitions and
+  non-compliance triggers to define findings.
+- **Quick lookups** — "Who owns <domain>?", "What evidence does <requirement> need?",
+  "Which requirements apply to all factories?"
 
 ## Reminders
 
-- Confirm scope and applicable standards before assuming requirements.
-- Keep the connected data chain intact; each element must trace to source and outcome.
-- Treat the listed automation controls as non-negotiable, system-enforced rules.
-- Keep one source of truth and a complete, auditable audit trail.
-- The 15-day launch is a Minimum Viable automation launch, not full certification.
+- The index CSV contains only name, domain, category, applicability, and owner — pull
+  full detail from the source workbook before issuing a verdict.
+- Confirm applicability before judging; "Only the SBU or activity named" is not
+  group-wide by default.
+- Confirm process owners with the organization; the workbook provides indicative owners.
+- Always answer with a clear verdict and, for non-compliance, the specific how and why.

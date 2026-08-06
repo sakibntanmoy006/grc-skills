@@ -14,24 +14,24 @@ npx skills add sakibntanmoy006/grc-skills@grc-office
 
 ## cms
 
-Guidance for implementing, automating, and operating a certifiable Compliance
-Management System based on ISO 37301, with supporting integrity standards (ISO 37001,
-37002, 37003), a 15-day PDCA launch roadmap, I-BOS automation modules, and dashboard
-KPIs/KRIs.
-
-```bash
-npx skills add sakibntanmoy006/grc-skills@cms
-```
-
-## compliance-catalog
-
 Compliance checker built on a catalog of 584 enterprise compliance requirements across
 80 domains and 11 categories. Describe any work or working method and the skill returns
 a verdict — COMPLIANT, NON-COMPLIANT, or NEEDS MORE INFORMATION — and, when
 non-compliant, explains exactly which requirements are breached and why.
 
 ```bash
-npx skills add sakibntanmoy006/grc-skills@compliance-catalog
+npx skills add sakibntanmoy006/grc-skills@cms
+```
+
+## cms-implementation
+
+Guidance for implementing, automating, and operating a certifiable Compliance
+Management System based on ISO 37301, with supporting integrity standards (ISO 37001,
+37002, 37003), a 15-day PDCA launch roadmap, I-BOS automation modules, and dashboard
+KPIs/KRIs.
+
+```bash
+npx skills add sakibntanmoy006/grc-skills@cms-implementation
 ```
 
 [![skills.sh](https://skills.sh/b/sakibntanmoy006/grc-skills)](https://skills.sh/sakibntanmoy006/grc-skills)
