@@ -25,10 +25,10 @@ npx skills add sakibntanmoy006/grc-skills@cms
 
 ## compliance-catalog
 
-Catalog of 584 enterprise compliance requirements across 80 domains and 11 categories,
-with an index of requirement names, domains, categories, applicability, and process
-owners. Use it to populate obligation registers, build risk-control matrices, and plan
-monitoring and audits.
+Compliance checker built on a catalog of 584 enterprise compliance requirements across
+80 domains and 11 categories. Describe any work or working method and the skill returns
+a verdict — COMPLIANT, NON-COMPLIANT, or NEEDS MORE INFORMATION — and, when
+non-compliant, explains exactly which requirements are breached and why.
 
 ```bash
 npx skills add sakibntanmoy006/grc-skills@compliance-catalog

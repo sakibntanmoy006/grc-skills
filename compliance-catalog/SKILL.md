@@ -1,38 +1,115 @@
 ---
 name: compliance-catalog
-description: Enterprise Compliance Management System (CMS) catalog of 584 filterable compliance requirements across 80 domains and 11 categories for a multi-SBU industrial enterprise (AKIJ Resource). Use when building or populating an obligation register, checking which compliance requirements apply to a function or SBU, mapping requirements to domains, identifying process owners or required evidence, creating risk-control matrices, or conducting compliance monitoring, testing, and audits.
+description: Compliance checker for an enterprise Compliance Management System (CMS) built on a catalog of 584 filterable compliance requirements across 80 domains and 11 categories. Use when someone describes their work, process, or working method and wants to know whether it is compliant or non-compliant, and if non-compliant, exactly which requirements are breached, what minimum requirements are violated, what evidence is missing, and which non-compliance triggers apply.
 license: MIT
 metadata:
   author: humaninside
-  tags: cms, compliance, obligation-register, risk-control, iso-37301, grc, audit, governance, legal, esg, hse
+  tags: cms, compliance, checker, verdict, obligation, iso-37301, grc, audit, governance, legal, esg, hse
 ---
 
-# Compliance Catalog — Enterprise Compliance Requirements
+# Compliance Catalog — Enterprise Compliance Checker
 
 ## Overview
 
-This skill provides the structured catalog of an enterprise Compliance Management
-System (CMS): **584 filterable compliance requirements** organized across **80 domains**
-and **11 categories**, each with minimum compliance requirements, required evidence,
-audit/pass criteria, non-compliance triggers, typical applicability/SBU, and an
-indicative process owner.
+This skill evaluates whether a described activity, process, or working method is
+**compliant** or **non-compliant** against an enterprise compliance catalog of
+**584 requirements** across **80 domains** and **11 categories**.
 
-The full index is in `references/requirements-index.csv`
-(name, domain, category, applicability, process owner). Use it to look up, filter, and
-map requirements into obligation registers, risk-control matrices, and audit plans.
+Given any description of how someone does their work, this skill:
 
-## When to Apply
+1. Identifies which compliance requirements could apply.
+2. Compares the described working method against the minimum requirements, required
+   evidence, and audit/pass criteria for those requirements.
+3. Produces a clear verdict: **COMPLIANT**, **NON-COMPLIANT**, or **NEEDS MORE
+   INFORMATION**.
+4. If non-compliant, explains **how and why** it is non-compliant, citing the exact
+   requirements breached.
 
-- Building or populating a CMS obligation register or compliance universe.
-- Identifying which compliance requirements apply to a given SBU, factory, or function.
-- Looking up required evidence, audit/pass criteria, or non-compliance triggers.
-- Assigning process owners and accountability for specific requirements.
-- Building a risk-control matrix or compliance risk assessment.
-- Planning monitoring, testing, and internal audit coverage.
-- Mapping requirements to standards (e.g., ISO 37301, ISO 27001, ISO 42001, ISO 14001,
-  ISO 45001) and buyer/customer codes.
+The requirement index is in `references/requirements-index.csv`
+(name, domain, category, applicability, process owner). The full field detail
+(minimum requirements, evidence, pass criteria, non-compliance triggers) lives in the
+source workbook `Compliance_Requirements_Only.xlsx`; load it when full detail is needed
+for a verdict.
 
-## Catalog Structure
+## The Compliance Check Workflow (Primary)
+
+Whenever someone describes their work or working method and asks whether it is
+compliant, follow this order:
+
+### Step 1 — Understand the described activity
+
+Extract from the description:
+
+- **Who** (role, function, SBU, factory, site)
+- **What** (the process, action, or working method)
+- **How** (steps, handling of documents/evidence, approvals, retention, controls)
+
+Ask clarifying questions only if you cannot determine scope from the description.
+
+### Step 2 — Identify candidate requirements
+
+- Filter the requirements index by keywords in the described activity, the role/SBU,
+  and the applicability patterns (e.g., "all factories", "Group-wide", "procurement",
+  "all information assets", "only the SBU named").
+- Narrow to the most relevant requirements; do not judge against the whole catalog.
+- Use the source workbook for full detail on each candidate.
+
+### Step 3 — Evaluate each candidate requirement
+
+For each candidate, compare the described method against:
+
+- **Minimum Requirements for Compliance** — are all required controls/actions present?
+- **Required Evidence** — is the required documentation produced and retained?
+- **Audit / Pass Criteria** — would the described method pass the audit test?
+- **Non-Compliance Triggers** — does the described method match any trigger?
+
+Also apply the CMS automation rules where relevant: unique IDs, mandatory evidence
+before closure, approval roles, segregation of duties, escalation, and audit trail.
+
+### Step 4 — Produce the verdict
+
+Use exactly this format:
+
+```
+VERDICT: COMPLIANT | NON-COMPLIANT | NEEDS MORE INFORMATION
+
+If COMPLIANT:
+  Based on: <requirement name(s)> — the method meets the minimum requirements,
+  produces required evidence, and passes audit criteria.
+
+If NON-COMPLIANT (for each breached requirement):
+  Requirement: <name> (Domain: <domain>)
+  What Is Non-Compliant: <the specific behavior/gap>
+  Minimum Requirement Violated: <field from workbook>
+  Evidence Missing: <what evidence is not produced/retained>
+  Pass Criteria Failed: <the audit criterion not met>
+  Non-Compliance Trigger Matched: <the trigger that applies>
+
+If NEEDS MORE INFORMATION:
+  Missing: <what info is needed to judge>
+  Ask: <specific questions to the user>
+```
+
+### Step 5 — Advise remediation (when non-compliant)
+
+For each breach, recommend corrective action: what to change in the working method,
+what evidence to start producing, who should own the fix (refer to the Indicative
+Process Owner), and how to re-verify compliance.
+
+## Rules of the Check
+
+- **Judge on evidence and controls, not intention.** A good-faith effort without
+  required evidence or controls is still non-compliant.
+- **Scope matters.** Only judge against requirements that apply to the described role,
+  SBU, factory, or activity. Requirements marked "Only the SBU or activity named" are
+  not group-wide by default.
+- **Minimum requirements are mandatory.** Missing any minimum requirement = non-compliant.
+- **When in doubt, ask.** If the description is insufficient to evaluate a requirement,
+  mark NEEDS MORE INFORMATION rather than guessing.
+- **Be specific.** Never answer "non-compliant" without naming the exact requirement(s)
+  and the specific reason.
+
+## Catalog Reference
 
 ### 11 Categories and Domain Coverage
 
@@ -63,7 +140,7 @@ map requirements into obligation registers, risk-control matrices, and audit pla
 | Why It Is Important | Rationale |
 | Why It Is Needed | Driver (law, code, buyer, internal) |
 | How It Should Work | Expected operating behaviour |
-| Minimum Requirements for Compliance | Minimum controls/actions |
+| Minimum Requirements for Compliance | Minimum controls/actions — the compliance bar |
 | Required Evidence | Documentation required |
 | Audit / Pass Criteria | How it is judged compliant |
 | Non-Compliance Triggers | What constitutes a breach |
@@ -82,65 +159,24 @@ Secretary/Board Office, Head of Legal, Head of Tax/CFO, Head of HSE, Head of
 Environment, CFO, Chief Risk Officer, Procurement/Compliance, Management
 Systems/Quality, CISO/Head of IT.
 
-## Workflow
+## Other Uses
 
-### Map requirements to an obligation register
+The catalog also supports:
 
-1. Filter `requirements-index.csv` by category, domain, or applicability/SBU.
-2. For each requirement, record: name, domain, owner, applicability.
-3. Pull minimum requirements, evidence, and pass criteria from the source workbook.
-4. Assign owners (default to the Indicative Process Owner unless overridden).
-5. Load into the CMS obligation register with due dates and frequencies.
-
-### Determine applicability for an SBU or function
-
-1. Identify the SBU/function/factory/site in scope.
-2. Search the index by applicability keywords (e.g., "all factories", "Group-wide",
-   "procurement", "all information assets").
-3. Cross-reference with the source workbook's "Typical Applicability / SBU" field.
-4. Add requirements named to that SBU specifically ("Only the SBU or activity named").
-5. Produce the applicable requirement list for that scope.
-
-### Build a risk-control matrix
-
-1. Group requirements by domain.
-2. For each requirement, define the risk (what could go wrong).
-3. Map the minimum requirements/controls from the workbook.
-4. Link the required evidence as the control evidence.
-5. Use audit/pass criteria as the testing and monitoring standard.
-
-### Plan monitoring, testing, and audits
-
-1. Prioritize by criticality of domain (Governance/Legal, HSE, Technology/Data first).
-2. For each requirement, use "Audit / Pass Criteria" as the test definition.
-3. Use "Non-Compliance Triggers" to define findings and escalations.
-4. Use "Required Evidence" as the sampling basis.
-5. Assign the Indicative Process Owner as the primary auditee/control owner.
-
-### Quick lookups
-
-- **"What evidence does <requirement> need?"** → filter the index to the requirement and
-  reference the source workbook's Required Evidence field.
-- **"Who owns <domain>?"** → group index by domain and inspect process owners.
-- **"Which requirements apply to all factories?"** → filter applicability containing
-  "factories" or "sites".
-- **"Is <activity> a compliance risk?"** → search the index for the activity keyword.
-
-## Deliverables
-
-- Applicable-requirement registers per SBU/function/site
-- Obligation register entries with owner, evidence, and pass criteria
-- Risk-control matrices mapped from requirements and controls
-- Audit/monitoring plans using pass criteria and non-compliance triggers
-- Domain and category coverage analyses
+- **Obligation register mapping** — filter by category/domain/SBU and load owners,
+  evidence, and pass criteria.
+- **Risk-control matrices** — group by domain, define the risk, map minimum
+  requirements and evidence as controls.
+- **Monitoring, testing, and audits** — use audit/pass criteria as test definitions and
+  non-compliance triggers to define findings.
+- **Quick lookups** — "Who owns <domain>?", "What evidence does <requirement> need?",
+  "Which requirements apply to all factories?"
 
 ## Reminders
 
-- Always pull the full field detail (evidence, criteria, triggers) from the source
-  workbook — the index CSV contains only name, domain, category, applicability, and
-  owner.
-- Verify applicability before including a requirement; "Only the SBU or activity named"
-  means the requirement is not group-wide by default.
+- The index CSV contains only name, domain, category, applicability, and owner — pull
+  full detail from the source workbook before issuing a verdict.
+- Confirm applicability before judging; "Only the SBU or activity named" is not
+  group-wide by default.
 - Confirm process owners with the organization; the workbook provides indicative owners.
-- Keep one source of truth (the workbook/register) and trace every obligation to its
-  requirement and evidence.
+- Always answer with a clear verdict and, for non-compliance, the specific how and why.
