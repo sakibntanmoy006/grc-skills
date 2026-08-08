@@ -14,10 +14,12 @@ npx skills add sakibntanmoy006/grc-skills@grc-office
 
 ## cms
 
-Compliance checker built on a catalog of 584 enterprise compliance requirements across
-80 domains and 11 categories. Describe any work or working method and the skill returns
-a verdict — COMPLIANT, NON-COMPLIANT, or NEEDS MORE INFORMATION — and, when
-non-compliant, explains exactly which requirements are breached and why.
+Library-first compliance resolver built on the organization's policy/SOP library and a
+catalog of 584 enterprise compliance requirements across 80 domains and 11 categories.
+When asked whether an activity, process, or working method is compliant, the answer is
+resolved from the organization's own policies and SOPs first (fetched from a public
+Google Drive folder); only when a topic is not covered by the internal library is it
+checked against the global standard, with the coverage gap reported explicitly.
 
 ```bash
 npx skills add sakibntanmoy006/grc-skills@cms

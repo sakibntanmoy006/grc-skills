@@ -1,113 +1,243 @@
 ---
 name: cms
-description: Compliance checker for an enterprise Compliance Management System (CMS) built on a catalog of 584 filterable compliance requirements across 80 domains and 11 categories. Use when someone describes their work, process, or working method and wants to know whether it is compliant or non-compliant, and if non-compliant, exactly which requirements are breached, what minimum requirements are violated, what evidence is missing, and which non-compliance triggers apply.
+description: Compliance resolver for an enterprise Compliance Management System (CMS) built on the organization's policy/SOP library and a catalog of 584 filterable compliance requirements across 80 domains and 11 categories. Use when someone asks whether an activity, process, or working method is compliant, or wants to know what the organization requires. The answer is resolved from the organization's own policies and SOPs first; only when a topic is not covered by the internal library is it checked against the global standard, with the gap reported explicitly. Also use for full library-to-standard coverage scans.
 license: MIT
 metadata:
   author: humaninside
   tags: cms, compliance, checker, verdict, obligation, iso-37301, grc, audit, governance, legal, esg, hse
 ---
 
-# Compliance Catalog — Enterprise Compliance Checker
+# Compliance Catalog — Library-First Compliance Resolver
 
 ## Overview
 
-This skill evaluates whether a described activity, process, or working method is
-**compliant** or **non-compliant** against an enterprise compliance catalog of
-**584 requirements** across **80 domains** and **11 categories**.
+This skill answers compliance questions for an enterprise using two sources, in this
+**strict order**:
 
-Given any description of how someone does their work, this skill:
+1. **The organization's own policy/SOP library** (fetched from the public Google Drive
+   folder). This is the first source of the answer.
+2. **The global compliance standard** — a catalog of **584 requirements** across
+   **80 domains** and **11 categories**. Used only when the library does not cover the topic.
 
-1. Identifies which compliance requirements could apply.
-2. Compares the described working method against the minimum requirements, required
-   evidence, and audit/pass criteria for those requirements.
-3. Produces a clear verdict: **COMPLIANT**, **NON-COMPLIANT**, or **NEEDS MORE
-   INFORMATION**.
-4. If non-compliant, explains **how and why** it is non-compliant, citing the exact
-   requirements breached.
+**Resolution rule:**
+
+- If the topic is **found** in a policy/SOP → the answer comes from that document.
+- If **not found** → first state clearly that it is not found in the organization's
+  policies/SOPs, then check the global standard and give the result (including the
+  internal coverage gap this creates).
 
 The requirement index is in `references/requirements-index.csv`
-(name, domain, category, applicability, process owner). The full field detail
-(minimum requirements, evidence, pass criteria, non-compliance triggers) lives in the
-source workbook `Compliance_Requirements_Only.xlsx`; load it when full detail is needed
-for a verdict.
+(name, domain, category, applicability, process owner). Full field detail lives in
+`references/requirements-full.csv` (all 13 fields) and in
+`references/Compliance_Requirements_Only.xlsx` (the source workbook). Always load full
+field detail before judging against the global standard.
 
-## The Compliance Check Workflow (Primary)
+---
 
-Whenever someone describes their work or working method and asks whether it is
-compliant, follow this order:
+## Part A — Compliance Query Resolution (Primary)
 
-### Step 1 — Understand the described activity
+Use this for any compliance question: "Is <activity/process/method> compliant?",
+"What does the company require for <topic>?", "Do we cover <requirement>?"
 
-Extract from the description:
+### Step 1 — Identify the compliance topic
 
-- **Who** (role, function, SBU, factory, site)
-- **What** (the process, action, or working method)
-- **How** (steps, handling of documents/evidence, approvals, retention, controls)
+From the question, extract:
 
-Ask clarifying questions only if you cannot determine scope from the description.
+- **Topic** (the subject: anti-bribery, food safety, data privacy, HR records, tax
+  filing, waste disposal, etc.)
+- **Who** (role, function, SBU, factory, site — e.g., Finance, HR, Akij Cement)
+- **What** (the process, action, or working method to be checked)
 
-### Step 2 — Identify candidate requirements
+If the topic is ambiguous, ask for the specific activity or document name.
 
-- Filter the requirements index by keywords in the described activity, the role/SBU,
-  and the applicability patterns (e.g., "all factories", "Group-wide", "procurement",
-  "all information assets", "only the SBU named").
-- Narrow to the most relevant requirements; do not judge against the whole catalog.
-- Use the source workbook for full detail on each candidate.
+### Step 2 — Query the library remotely (no downloads, nothing persisted)
 
-### Step 3 — Evaluate each candidate requirement
+- Read `config.json` for the shared Drive `folder_id` (no API key needed; folder is public).
+- Run `python3 scripts/query_library.py "<topic>"` — this:
+  1. Fetches **only folder-listing pages** (metadata: names, paths) to find the relevant
+     Function department / SBU area, matched by keywords and a department-alias map
+     (e.g., "anti bribery" → Function/Compliance, "tax" → Function/Tax).
+  2. Downloads **only the top matching documents** into memory and prints their
+     extracted text (PDF via pdftotext, DOCX/XLSX parsed, Google-native files exported).
+  3. **Persists nothing** — no library cache, no files written to disk (unless
+     `--save-to <dir>` is used deliberately).
+- If the query returns no match, widen it with more synonyms or an explicit area:
+  `python3 scripts/query_library.py --tree` lists names only, or point at a specific
+  folder with `--tree <area>`.
 
-For each candidate, compare the described method against:
+### Step 3 — Search the fetched text
 
-- **Minimum Requirements for Compliance** — are all required controls/actions present?
-- **Required Evidence** — is the required documentation produced and retained?
-- **Audit / Pass Criteria** — would the described method pass the audit test?
-- **Non-Compliance Triggers** — does the described method match any trigger?
+Search the query output (document text) for the topic:
 
-Also apply the CMS automation rules where relevant: unique IDs, mandatory evidence
-before closure, approval roles, segregation of duties, escalation, and audit trail.
+- Match by keywords, the function/SBU folder path, and the document name.
+- Look for documents of type policy, SOP, register, or form (based on name markers:
+  POL-, SOP-, WI-, REG-, FR-, "policy", "procedure", "register", "template").
+- Collect every relevant document. Do not silently skip an unreadable document —
+  flag it.
 
-### Step 4 — Produce the verdict
+### Step 4 — Resolve: found in library
 
-Use exactly this format:
+If one or more policies/SOPs cover the topic, the **answer comes from them**:
 
 ```
+FOUND IN ORGANIZATIONAL LIBRARY
+
+Document: <name> (<doc type>, <function/SBU path>)
+Source: <saved path in library/>
+
+What Our <Policy/SOP> Requires:
+<quote/summarize the internal rule: scope, controls, evidence, approvals,
+retention, escalation>
+
+Relevant Requirements (global standard) It Aligns With:
+Requirement: <name> (Domain: <domain>) — <COMPLIANT | PARTIAL | NOT EVALUATED>
+<note any gap between the internal document and the global standard's minimum
+requirements / required evidence / pass criteria>
+```
+
+- The primary answer is the internal document's position. Do not substitute the global
+  standard for it.
+- Optionally, still check alignment with the global standard and report PARTIAL gaps
+  (the internal document exists but may fall short of the global minimum bar).
+
+### Step 5 — Resolve: not found in library
+
+If no policy/SOP covers the topic, follow this order **exactly**:
+
+```
+NOT FOUND IN ORGANIZATIONAL POLICY/SOP LIBRARY
+Documents checked: <n> (list names of the closest/most similar documents, if any)
+
+Now checking against the global standard...
+
+Requirement: <name> (Domain: <domain>)
+What the Global Standard Requires:
+  Minimum Requirements: <field from the workbook>
+  Required Evidence: <field from the workbook>
+  Audit / Pass Criteria: <field from the workbook>
+  Applicability: <field — does it apply to this role/SBU/factory?>
+
 VERDICT: COMPLIANT | NON-COMPLIANT | NEEDS MORE INFORMATION
 
-If COMPLIANT:
-  Based on: <requirement name(s)> — the method meets the minimum requirements,
-  produces required evidence, and passes audit criteria.
-
-If NON-COMPLIANT (for each breached requirement):
-  Requirement: <name> (Domain: <domain>)
+If NON-COMPLIANT:
   What Is Non-Compliant: <the specific behavior/gap>
-  Minimum Requirement Violated: <field from workbook>
+  Minimum Requirement Violated: <field from the workbook>
   Evidence Missing: <what evidence is not produced/retained>
   Pass Criteria Failed: <the audit criterion not met>
   Non-Compliance Trigger Matched: <the trigger that applies>
+  Remediation: <what to change, what evidence to start producing, who owns the fix
+  (Indicative Process Owner), and the internal policy/SOP that must be created>
 
 If NEEDS MORE INFORMATION:
   Missing: <what info is needed to judge>
   Ask: <specific questions to the user>
+
+IMPORTANT: The lack of an internal policy/SOP is itself a coverage gap. If the
+requirement applies and no internal document evidences it, the organization is
+non-compliant with the global standard until a policy/SOP is created, regardless of
+whether the underlying activity is carried out correctly in practice.
 ```
 
-### Step 5 — Advise remediation (when non-compliant)
+- First line must state the topic was **not found** in the library.
+- Then evaluate only against the global standard (never guess at an internal rule).
 
-For each breach, recommend corrective action: what to change in the working method,
-what evidence to start producing, who should own the fix (refer to the Indicative
-Process Owner), and how to re-verify compliance.
+---
+
+## Part B — Full Library Scan (coverage report)
+
+Use when the whole library must be checked against the global standard (e.g., "scan all
+policies/SOPs").
+
+### Step 1 — Fetch and ingest the library
+
+- Run `python3 scripts/fetch_library.py --download-all` (optional, for a full local
+  mirror) or query each area remotely with `scripts/query_library.py --tree` and
+  `--save-to <dir>` to persist just what the scan needs.
+- Extract text from PDFs/DOCX/XLSX so content can be searched.
+
+### Step 2 — Load the global standard
+
+Load all 584 requirements with full field detail from `references/requirements-full.csv`
+or the workbook.
+
+### Step 3 — Map both directions
+
+1. **Document → requirements:** for each document, identify the requirements it is
+   intended to satisfy (content keywords, domain/category tags, applicability patterns,
+   stated scope).
+2. **Requirement → documents:** for each applicable requirement, find which document(s)
+   evidence it. Any requirement with **no** covering document is a coverage gap.
+
+### Step 4 — Produce the report
+
+```
+LIBRARY COVERAGE REPORT — <date>
+
+Global standard: 584 requirements / 80 domains / 11 categories
+Documents scanned: <n> (policies: n, SOPs: n, registers: n, forms: n)
+
+COVERAGE MAP (requirement -> document):
+  Requirement: <name> (Domain: <domain>)
+  Status: COVERED | PARTIAL | NO DOCUMENT
+  Covering document: <name> (doc id)
+  Gap: <what's missing vs minimum requirements / evidence / pass criteria>
+
+PER-DOCUMENT GAP REPORT (document -> requirements):
+  Document: <name> (<doc type>)
+  Verdict: COMPLIANT | NON-COMPLIANT | PARTIAL | NOT ASSESSED
+  Based on: <requirement names it satisfies, with the specific pass criteria met>
+  Non-Compliant / Partial (for each gap):
+    Requirement: <name> (Domain: <domain>)
+    What Is Non-Compliant: <the specific gap in the document>
+    Minimum Requirement Violated: <field from the workbook>
+    Evidence Missing: <what evidence is not covered/retained>
+    Pass Criteria Failed: <the audit criterion not met>
+    Non-Compliance Trigger Matched: <the trigger that applies>
+    Recommended Fix: <what to add/change, who owns it (Indicative Process Owner)>
+
+SUMMARY:
+  Requirements covered fully: n / 584
+  Requirements with no document: n
+  Documents fully compliant: n; partial: n; non-compliant: n
+  Top domains at risk: <domains with most gaps>
+```
+
+- **Coverage gaps** (requirement with no document) are NON-COMPLIANT by default.
+- **NOT ASSESSED** means the document text could not be extracted — flag it, do not infer.
+
+---
 
 ## Rules of the Check
 
+- **Internal library first, global standard second.** If a policy/SOP covers the topic,
+  the answer comes from it. The global standard is consulted only when the library does
+  not cover the topic — and that not-found is always stated first.
+- **A missing document is a breach.** If a requirement applies and no policy/SOP
+  evidences it, the organization is non-compliant with the global standard until one is
+  created.
 - **Judge on evidence and controls, not intention.** A good-faith effort without
   required evidence or controls is still non-compliant.
 - **Scope matters.** Only judge against requirements that apply to the described role,
   SBU, factory, or activity. Requirements marked "Only the SBU or activity named" are
   not group-wide by default.
 - **Minimum requirements are mandatory.** Missing any minimum requirement = non-compliant.
-- **When in doubt, ask.** If the description is insufficient to evaluate a requirement,
-  mark NEEDS MORE INFORMATION rather than guessing.
+- **When in doubt, ask.** If the description or extracted text is insufficient to
+  evaluate a requirement, mark NEEDS MORE INFORMATION / NOT ASSESSED rather than guessing.
 - **Be specific.** Never answer "non-compliant" without naming the exact requirement(s)
   and the specific reason.
+
+## Skill File Layout
+
+```
+cms/
+  SKILL.md                            # this file
+  config.json                         # Google Drive folder_id (public, no API key)
+  scripts/query_library.py            # remote, zero-download query (default flow)
+  scripts/fetch_library.py            # optional full local mirror (--download-all)
+  references/requirements-index.csv   # name, domain, category, applicability, owner
+  references/requirements-full.csv    # all 13 fields, 584 rows
+  references/Compliance_Requirements_Only.xlsx  # source workbook (full detail)
+```
 
 ## Catalog Reference
 
@@ -174,9 +304,12 @@ The catalog also supports:
 
 ## Reminders
 
-- The index CSV contains only name, domain, category, applicability, and owner — pull
-  full detail from the source workbook before issuing a verdict.
+- **Always resolve from the internal library first.** State "FOUND" with the document,
+  or "NOT FOUND in organizational policy/SOP library" before consulting the global
+  standard.
+- Use `references/requirements-full.csv` for full field detail before judging against
+  the global standard.
 - Confirm applicability before judging; "Only the SBU or activity named" is not
   group-wide by default.
 - Confirm process owners with the organization; the workbook provides indicative owners.
-- Always answer with a clear verdict and, for non-compliance, the specific how and why.
+- Always answer with a clear result and, for non-compliance, the specific how and why.
