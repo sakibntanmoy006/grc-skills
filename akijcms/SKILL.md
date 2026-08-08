@@ -1,10 +1,10 @@
 ---
-name: cms
+name: akijcms
 description: Compliance resolver for an enterprise Compliance Management System (CMS) built on the organization's policy/SOP library and a catalog of 584 filterable compliance requirements across 80 domains and 11 categories. Use when someone asks whether an activity, process, or working method is compliant, or wants to know what the organization requires. The answer is resolved from the organization's own policies and SOPs first; only when a topic is not covered by the internal library is it checked against the global standard, with the gap reported explicitly. Also use for full library-to-standard coverage scans.
 license: MIT
 metadata:
   author: humaninside
-  tags: cms, compliance, checker, verdict, obligation, iso-37301, grc, audit, governance, legal, esg, hse
+  tags: akijcms, cms, compliance, checker, verdict, obligation, iso-37301, grc, audit, governance, legal, esg, hse
 ---
 
 # Compliance Catalog — Library-First Compliance Resolver

@@ -12,7 +12,7 @@ controlling compliance, governance, and risk programs across ISMS, AIMS, CMS, an
 npx skills add sakibntanmoy006/grc-skills@grc-office
 ```
 
-## cms
+## akijcms
 
 Library-first compliance resolver built on the organization's policy/SOP library and a
 catalog of 584 enterprise compliance requirements across 80 domains and 11 categories.
@@ -22,7 +22,7 @@ Google Drive folder); only when a topic is not covered by the internal library i
 checked against the global standard, with the coverage gap reported explicitly.
 
 ```bash
-npx skills add sakibntanmoy006/grc-skills@cms
+npx skills add sakibntanmoy006/grc-skills@akijcms
 ```
 
 ## cms-implementation
